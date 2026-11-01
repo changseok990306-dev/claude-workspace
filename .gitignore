@@ -1,6 +1,7 @@
 # 🔒 비밀 키·인증 정보
 .env
 .env.*
+!.env.example
 *.key
 *.pem
 id_rsa*
@@ -27,3 +28,6 @@ node_modules/
 
 # ▲ Vercel 로컬 설정
 .vercel/
+
+# 로컬 개발용 환경변수 (진짜 키 — 절대 git 에 올리지 않음)
+.env.local
