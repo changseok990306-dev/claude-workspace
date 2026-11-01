@@ -18,7 +18,10 @@ claude-workspace/
 ├── api/
 │   └── guestbook.js   💬 방명록 서버 함수 (Vercel)
 ├── supabase/
-│   └── guestbook.sql  🗄️ 방명록 DB 스키마 + 보안 정책
+│   └── messages.sql   🗄️ 방명록 DB 스키마 + 보안 정책
+├── scripts/
+│   └── dev-server.js  🧪 로컬 테스트용 서버 (포트폴리오 + 방명록)
+├── .env.local         🔒 로컬 테스트용 키 (내 컴퓨터에만 · GitHub에는 없음)
 ├── .env               🔒 API 키 보관 (로컬에만 존재 · GitHub에는 없음)
 ├── tasks/
 │   ├── todo.md        ✅ 오늘 할 일 (체크리스트)
@@ -71,14 +74,33 @@ claude-workspace/
 방명록은 `브라우저 → api/guestbook.js (Vercel 함수) → Supabase` 순서로 동작해요. 키는 코드가 아니라 Vercel 환경변수에만 둡니다.
 
 1. [supabase.com](https://supabase.com)에서 프로젝트 만들기
-2. **SQL Editor**에 `supabase/guestbook.sql` 내용을 붙여넣고 **Run**
+2. **SQL Editor → New query**에 `supabase/messages.sql` 내용을 붙여넣고 **Run** (`messages` 테이블 + 읽기/쓰기 정책이 만들어져요)
 3. **Project Settings → API**에서 `Project URL`과 `anon public` 키 복사 (⚠️ `service_role` 키는 복사 금지)
 4. Vercel 프로젝트 → **Settings → Environment Variables**에 등록 (이름은 `.env.example` 참고)
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
 5. **Redeploy** (환경변수는 재배포해야 적용돼요)
 
-> 방명록 글을 숨기고 싶으면 Supabase **Table Editor** → `guestbook` → 해당 글의 `is_hidden`을 `true`로 바꾸세요.
+> 방명록 글을 지우고 싶으면 Supabase **Table Editor** → `messages` → 해당 행을 삭제하세요. (방문자는 수정·삭제 불가)
+
+### 🧪 로컬에서 테스트하기
+
+Vercel에 올리기 전에 내 컴퓨터에서 먼저 확인할 수 있어요.
+
+1. 프로젝트 폴더에 `.env.local` 파일을 만들고 아래 두 줄을 채워요. (`.env.example` 참고 · 이 파일은 git에 안 올라가요)
+   ```
+   SUPABASE_URL=https://xxxx.supabase.co
+   SUPABASE_ANON_KEY=여기에_anon_공개키
+   ```
+2. 터미널에서 실행 (Node.js 20.6 이상 필요)
+   ```
+   node --env-file=.env.local scripts/dev-server.js
+   ```
+3. 브라우저에서 **http://localhost:3000** 열기 → 맨 아래 방명록에서 글 남겨 보기
+4. 끄려면 터미널에서 `Ctrl + C`
+
+> 목록이 "불러오지 못했어요"로 나오면, 터미널에 찍히는 `[guestbook] Supabase 응답 …` 줄이 원인이에요.
+> `Could not find the table` → 아직 2번(SQL 실행)을 안 한 거예요.
 
 ---
 

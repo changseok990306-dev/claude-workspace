@@ -1,4 +1,4 @@
-# ✅ 오늘 할 일 (todo)
+﻿# ✅ 오늘 할 일 (todo)
 
 > 작업을 시작할 때 이 파일을 먼저 확인합니다.
 > 끝난 항목은 `[x]`로 체크하고, 완료 내용은 `progress.md`에 기록합니다.
@@ -9,7 +9,8 @@
 
 방식: 브라우저 → **Vercel 함수(`api/guestbook.js`)** → Supabase. 키는 Vercel 환경변수에만 보관 (코드에 하드코딩 X)
 
-- [ ] 0. (직접) Supabase 프로젝트 만들고 `supabase/guestbook.sql` 실행
+- [x] 0a. Supabase 프로젝트 생성, URL·anon 키 `.env.local`에 저장
+- [ ] 0b. (직접) SQL Editor에서 `supabase/messages.sql` 실행 → `messages` 테이블 생성
 - [x] 1. 새 브랜치 `guestbook`
 - [x] 2. `api/guestbook.js` 작성 — GET(목록) / POST(작성), 입력 검증·간단한 도배 방지
 - [x] 3. `portfolio/index.html`에 방명록 섹션(입력창+목록) 추가 — 남색 테마 유지, `textContent`로 출력
@@ -47,3 +48,4 @@
 ---
 
 <!-- 새 날짜는 위쪽에 추가하세요 -->
+

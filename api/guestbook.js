@@ -1,6 +1,6 @@
 // 방명록 API (Vercel 서버리스 함수)
 //   GET  /api/guestbook  → 최신 글 50개
-//   POST /api/guestbook  → 새 글 등록 { name, message }
+//   POST /api/guestbook  → 새 글 등록 { name, content }   (Supabase 테이블: messages)
 //
 // 키는 코드에 쓰지 않고 Vercel 환경변수에서만 읽습니다.
 //   SUPABASE_URL, SUPABASE_ANON_KEY  (anon 공개 키만 사용 — service_role 금지)
@@ -18,6 +18,13 @@ function send(res, status, body) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(body));
+}
+
+// Supabase 가 오류로 응답하면 원인을 서버 로그에만 남긴다 (키·요청 헤더는 기록하지 않음)
+async function logFail(r) {
+  try {
+    console.error('[guestbook] Supabase 응답', r.status, (await r.text()).slice(0, 300));
+  } catch {}
 }
 
 function clientIp(req) {
@@ -45,16 +52,19 @@ module.exports = async function handler(req, res) {
     return send(res, 500, { error: '서버 설정이 아직 안 되어 있어요.' });
   }
 
-  const base = `${url.replace(/\/+$/, '')}/rest/v1/guestbook`;
+  const base = `${url.replace(/\/+$/, '')}/rest/v1/messages`;
   const headers = { apikey: key, Authorization: `Bearer ${key}` };
 
   try {
     if (req.method === 'GET') {
       const r = await fetch(
-        `${base}?select=id,name,message,created_at&order=created_at.desc&limit=${LIST_LIMIT}`,
+        `${base}?select=id,name,content,created_at&order=created_at.desc&limit=${LIST_LIMIT}`,
         { headers }
       );
-      if (!r.ok) return send(res, 502, { error: '목록을 불러오지 못했어요.' });
+      if (!r.ok) {
+        await logFail(r);
+        return send(res, 502, { error: '목록을 불러오지 못했어요.' });
+      }
       return send(res, 200, { items: await r.json() });
     }
 
@@ -70,11 +80,11 @@ module.exports = async function handler(req, res) {
       if (data && data.website) return send(res, 201, { ok: true });
 
       const name = typeof data.name === 'string' ? data.name.trim() : '';
-      const message = typeof data.message === 'string' ? data.message.trim() : '';
+      const content = typeof data.content === 'string' ? data.content.trim() : '';
       if (!name || name.length > NAME_MAX) {
         return send(res, 400, { error: `이름은 1~${NAME_MAX}자로 적어 주세요.` });
       }
-      if (!message || message.length > MESSAGE_MAX) {
+      if (!content || content.length > MESSAGE_MAX) {
         return send(res, 400, { error: `메시지는 1~${MESSAGE_MAX}자로 적어 주세요.` });
       }
 
@@ -87,9 +97,12 @@ module.exports = async function handler(req, res) {
       const r = await fetch(base, {
         method: 'POST',
         headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-        body: JSON.stringify({ name, message }),
+        body: JSON.stringify({ name, content }),
       });
-      if (!r.ok) return send(res, 502, { error: '저장하지 못했어요. 잠시 후 다시 시도해 주세요.' });
+      if (!r.ok) {
+        await logFail(r);
+        return send(res, 502, { error: '저장하지 못했어요. 잠시 후 다시 시도해 주세요.' });
+      }
 
       lastPost.set(ip, now);
       return send(res, 201, { ok: true });

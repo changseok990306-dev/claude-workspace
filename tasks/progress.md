@@ -35,3 +35,13 @@
 5. 검증: 가짜 Supabase로 API 9가지 규칙 테스트 통과, 악성 스크립트 글이 글자 그대로 표시됨을 화면으로 확인
 - 미확인: 진짜 Supabase 연결 (사용자가 프로젝트 생성·환경변수 등록 후 배포해서 확인 필요)
 - 메모: 도배 방지는 서버 메모리 기반이라 완벽하지 않음 → 스팸이 늘면 캡차 추가 검토
+
+## 2026-11-01 — 방명록을 `messages` 테이블 + 로컬 테스트 방식으로 수정 (브랜치 `guestbook`)
+
+1. `supabase/guestbook.sql` → `supabase/messages.sql`로 이름 변경 + 수정: `messages`(id, name, content, created_at), RLS 누구나 읽기/쓰기, 수정·삭제 불가
+2. `api/guestbook.js`, `portfolio/index.html`을 `content` 컬럼 기준으로 수정. Supabase 오류 시 서버 로그에 원인 기록(키는 기록 안 함)
+3. `.env.local`에 Supabase URL·anon 키 저장 (git 제외 확인). 키 종류 확인: role=anon, URL과 프로젝트 일치
+4. `scripts/dev-server.js` 추가 — `node --env-file=.env.local scripts/dev-server.js` 로 로컬 테스트
+5. README에 로컬 테스트 방법 추가
+6. 검증: 진짜 Supabase 연결 확인(키·URL 정상, 응답: 테이블 없음 `PGRST205`), 가짜 DB로 글쓰기→목록 표시, 입력 검사, 경로 탈출 차단 통과
+- 미확인: 진짜 DB에 글쓰기 (테이블이 아직 없음 → 사용자가 SQL Editor에서 `messages.sql` 실행 필요)

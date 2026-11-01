@@ -289,7 +289,7 @@
       who.appendChild(name);
       who.appendChild(time);
       var msg = document.createElement('p');
-      msg.textContent = it.message;
+      msg.textContent = it.content;
       box.appendChild(who);
       box.appendChild(msg);
       listEl.appendChild(box);
@@ -322,7 +322,7 @@
     fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name, message: message, website: document.getElementById('gb-website').value })
+      body: JSON.stringify({ name: name, content: message, website: document.getElementById('gb-website').value })
     })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (x) {
