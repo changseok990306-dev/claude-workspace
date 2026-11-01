@@ -13,6 +13,7 @@ claude-workspace/
 ├── README.md          📖 지금 보고 있는 파일 — 폴더 안내
 ├── SECURITY.md        🚨 키 노출 시 비상 매뉴얼
 ├── .gitignore         🙈 git에 올리지 않을 파일 목록
+├── vercel.json        ▲ Vercel 배포 설정 (portfolio/ 폴더만 공개)
 ├── .env               🔒 API 키 보관 (로컬에만 존재 · GitHub에는 없음)
 ├── tasks/
 │   ├── todo.md        ✅ 오늘 할 일 (체크리스트)
@@ -46,6 +47,19 @@ claude-workspace/
 | `.env` | 프로그램이 키를 읽을 때 | 나만 (절대 공유 X) |
 | `docs/` | 참고 자료·샘플 데이터가 필요할 때 | 나 |
 | `portfolio/index.html` | 포트폴리오 페이지를 볼 때 (브라우저로 열기) | 나 + Claude Code |
+
+---
+
+## 🚀 포트폴리오 배포 (Vercel)
+
+`vercel.json`이 설정돼 있어서 `portfolio/` 폴더만 웹에 공개돼요. (`CLAUDE.md`, `SECURITY.md`, `tasks/` 등은 공개되지 않음)
+
+1. [vercel.com](https://vercel.com) 로그인 → **Add New… → Project**
+2. GitHub의 `claude-workspace` 레포 선택 → **Import**
+3. 설정은 건드리지 않고 **Deploy** (Framework Preset은 `Other`, 나머지는 `vercel.json`이 알아서 적용)
+4. 이후엔 `main`에 push할 때마다 **자동으로 다시 배포**돼요.
+
+> ⚠️ 배포 전에 `portfolio/index.html`의 노란색 `[ ]` 자리를 채우세요. 안 채우면 그대로 공개돼요.
 
 ---
 
