@@ -1,0 +1,26 @@
+# 🔒 비밀 키·인증 정보
+.env
+.env.*
+*.key
+*.pem
+id_rsa*
+credentials*
+*.p12
+*.pfx
+
+# 🙈 개인·거래처 정보 (필요하면 이 줄을 지우고 올리세요)
+docs/resume.pdf
+tasks/move-log.csv
+
+# 🗑️ 백업·임시 파일
+*.bak
+*.tmp
+~$*
+
+# 💻 OS·에디터
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+node_modules/
