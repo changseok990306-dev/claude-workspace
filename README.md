@@ -14,6 +14,11 @@ claude-workspace/
 ├── SECURITY.md        🚨 키 노출 시 비상 매뉴얼
 ├── .gitignore         🙈 git에 올리지 않을 파일 목록
 ├── vercel.json        ▲ Vercel 배포 설정 (portfolio/ 폴더만 공개)
+├── .env.example       📝 필요한 환경변수 이름 목록 (값 없음)
+├── api/
+│   └── guestbook.js   💬 방명록 서버 함수 (Vercel)
+├── supabase/
+│   └── guestbook.sql  🗄️ 방명록 DB 스키마 + 보안 정책
 ├── .env               🔒 API 키 보관 (로컬에만 존재 · GitHub에는 없음)
 ├── tasks/
 │   ├── todo.md        ✅ 오늘 할 일 (체크리스트)
@@ -60,6 +65,20 @@ claude-workspace/
 4. 이후엔 `main`에 push할 때마다 **자동으로 다시 배포**돼요.
 
 > ⚠️ 배포 전에 `portfolio/index.html`의 노란색 `[ ]` 자리를 채우세요. 안 채우면 그대로 공개돼요.
+
+### 💬 방명록 설정 (Supabase)
+
+방명록은 `브라우저 → api/guestbook.js (Vercel 함수) → Supabase` 순서로 동작해요. 키는 코드가 아니라 Vercel 환경변수에만 둡니다.
+
+1. [supabase.com](https://supabase.com)에서 프로젝트 만들기
+2. **SQL Editor**에 `supabase/guestbook.sql` 내용을 붙여넣고 **Run**
+3. **Project Settings → API**에서 `Project URL`과 `anon public` 키 복사 (⚠️ `service_role` 키는 복사 금지)
+4. Vercel 프로젝트 → **Settings → Environment Variables**에 등록 (이름은 `.env.example` 참고)
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+5. **Redeploy** (환경변수는 재배포해야 적용돼요)
+
+> 방명록 글을 숨기고 싶으면 Supabase **Table Editor** → `guestbook` → 해당 글의 `is_hidden`을 `true`로 바꾸세요.
 
 ---
 

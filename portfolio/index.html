@@ -93,6 +93,31 @@
   .contact a, .contact span.v { color: var(--text); font-weight: 600; text-decoration: none; }
   .contact a:hover { color: var(--accent); }
 
+  /* 방명록 */
+  .gb-form { display: grid; gap: 12px; margin-bottom: 28px; }
+  .gb-form input[type="text"], .gb-form textarea {
+    width: 100%; font: inherit; color: var(--text);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .gb-form textarea { min-height: 104px; resize: vertical; }
+  .gb-form input:focus, .gb-form textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .gb-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .gb-hint { color: var(--muted); font-size: .82rem; }
+  .gb-form button { cursor: pointer; font: inherit; }
+  .gb-form button:disabled { opacity: .5; cursor: not-allowed; }
+  .gb-status { min-height: 1.4em; font-size: .9rem; color: var(--muted); }
+  .gb-status.err { color: #ff8f8f; }
+  .gb-status.ok { color: #7be0a4; }
+  .gb-list { display: grid; gap: 12px; }
+  .gb-item { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; }
+  .gb-item .who { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .gb-item strong { font-size: .98rem; }
+  .gb-item time { color: var(--muted); font-size: .82rem; }
+  .gb-item p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .gb-empty { color: var(--muted); }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
   /* "여기 채우세요" 표시 */
   .ph { background: var(--ph); border-radius: 4px; padding: 0 4px; }
 
@@ -113,6 +138,7 @@
       <a href="#about">소개</a>
       <a href="#career">경력</a>
       <a href="#contact">연락처</a>
+      <a href="#guestbook">방명록</a>
     </nav>
   </div>
 </header>
@@ -199,11 +225,119 @@
     </div>
   </section>
 
+  <!-- 방명록 -->
+  <section id="guestbook">
+    <h2><span>04</span>방명록</h2>
+    <form class="gb-form" id="gb-form" autocomplete="off">
+      <input type="text" id="gb-name" placeholder="이름 (최대 30자)" maxlength="30" required aria-label="이름">
+      <textarea id="gb-message" placeholder="남기고 싶은 말을 적어 주세요 (최대 500자)" maxlength="500" required aria-label="메시지"></textarea>
+      <!-- 봇 함정: 사람에게는 보이지 않음 -->
+      <div class="hp" aria-hidden="true"><input type="text" id="gb-website" tabindex="-1" autocomplete="off"></div>
+      <div class="gb-row">
+        <span class="gb-hint">⚠️ 전화번호·주소 같은 개인정보는 적지 마세요. 글은 모두에게 공개돼요.</span>
+        <button class="btn primary" type="submit" id="gb-submit">남기기</button>
+      </div>
+      <div class="gb-status" id="gb-status" role="status" aria-live="polite"></div>
+    </form>
+    <div class="gb-list" id="gb-list"><p class="gb-empty">불러오는 중…</p></div>
+  </section>
+
 </main>
 
 <footer>
   <div class="wrap">© 2026 오창석. All rights reserved.</div>
 </footer>
+
+<script>
+(function () {
+  var API = '/api/guestbook';
+  var listEl = document.getElementById('gb-list');
+  var form = document.getElementById('gb-form');
+  var statusEl = document.getElementById('gb-status');
+  var btn = document.getElementById('gb-submit');
+
+  function setStatus(text, kind) {
+    statusEl.textContent = text || '';
+    statusEl.className = 'gb-status' + (kind ? ' ' + kind : '');
+  }
+
+  function fmt(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    return d.toLocaleString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  // 사용자가 쓴 글은 항상 textContent 로만 넣는다 (악성 스크립트 방지)
+  function render(items) {
+    listEl.textContent = '';
+    if (!items.length) {
+      var p = document.createElement('p');
+      p.className = 'gb-empty';
+      p.textContent = '아직 방명록이 없어요. 첫 번째 글을 남겨 주세요!';
+      listEl.appendChild(p);
+      return;
+    }
+    items.forEach(function (it) {
+      var box = document.createElement('article');
+      box.className = 'gb-item';
+      var who = document.createElement('div');
+      who.className = 'who';
+      var name = document.createElement('strong');
+      name.textContent = it.name;
+      var time = document.createElement('time');
+      time.textContent = fmt(it.created_at);
+      who.appendChild(name);
+      who.appendChild(time);
+      var msg = document.createElement('p');
+      msg.textContent = it.message;
+      box.appendChild(who);
+      box.appendChild(msg);
+      listEl.appendChild(box);
+    });
+  }
+
+  function load() {
+    fetch(API, { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (x) {
+        if (!x.ok) throw new Error(x.j && x.j.error);
+        render(x.j.items || []);
+      })
+      .catch(function () {
+        listEl.textContent = '';
+        var p = document.createElement('p');
+        p.className = 'gb-empty';
+        p.textContent = '방명록을 불러오지 못했어요. 잠시 후 다시 확인해 주세요.';
+        listEl.appendChild(p);
+      });
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = document.getElementById('gb-name').value.trim();
+    var message = document.getElementById('gb-message').value.trim();
+    if (!name || !message) { setStatus('이름과 메시지를 모두 적어 주세요.', 'err'); return; }
+    btn.disabled = true;
+    setStatus('남기는 중…');
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, message: message, website: document.getElementById('gb-website').value })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (x) {
+        if (!x.ok) throw new Error((x.j && x.j.error) || '오류가 발생했어요.');
+        form.reset();
+        setStatus('남겨 주셔서 감사합니다! 🙌', 'ok');
+        load();
+      })
+      .catch(function (err) { setStatus(err.message || '오류가 발생했어요.', 'err'); })
+      .then(function () { btn.disabled = false; });
+  });
+
+  load();
+})();
+</script>
 
 </body>
 </html>

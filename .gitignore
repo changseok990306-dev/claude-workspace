@@ -1,6 +1,7 @@
 # 🔒 비밀 키·인증 정보
 .env
 .env.*
+!.env.example
 *.key
 *.pem
 id_rsa*
